@@ -1,30 +1,137 @@
-import {useState} from "react";
+import React, {useState} from "react";
+import {Redirect} from 'react-router-dom';
+import qs from 'qs';
+import axios from "axios";
+import {showerrorNotification,showSuccessNotification}  from '../../src/notifications/noty';
+import {GoogleLogin, GoogleLogout} from "react-google-login";
+import { refreshTokenSetup } from '../utils/refreshToken';
 
-const Student_Login=()=>{
+const sessionUrl='http://localhost:8000/create-session';
+const googleUrl='http://localhost:8000/user/auth/google';
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+class Student_Login extends React.Component{
+
+  constructor()
+  {
+      super();
+      let loggedIn=false;
+
+      const token=localStorage.getItem('token');
+      if(token)  
+      loggedIn=true;
+ 
+      this.state={
+          email:'',
+          password:'',
+          loggedIn
+          }
+  }
+
+  handleChange=(e)=>
+  {  this.setState(
+      {
+      [e.target.id]:[e.target.value]
+      });
+  }
+
+
+  handleSubmit=(e)=>
+  {   
+    e.preventDefault();
+
+    const {email,password}=this.state;
+    const body= qs.stringify({email:email,password:password});
+    axios.post(sessionUrl, body, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(data=>
+        {
+          if(data.status === 200)
+          {
+
+              console.log(data.data.data.user.email);
+              localStorage.setItem('token',data.data.data.token);
+              // localStorage.setItem('name',data.data.data.user.name);
+              localStorage.setItem('email',data.data.data.user.email);
+              localStorage.setItem('id',data.data.data.user._id);
+              showSuccessNotification('Logged in');
+              this.setState({loggedIn:true});
+
+            }
+            
+        }).catch(error=>
+            {
+              console.log('in catch',error);
+              showerrorNotification(error.response.data.message)
+            });
+          }
+    // handleLogin = async googleData => {
+    //         const res = await fetch(googleUrl, {
+    //             method: "POST",
+    //             body: JSON.stringify({
+    //             token: googleData.tokenId
+    //           }),
+    //           headers: {
+    //             "Content-Type": "application/json"
+    //           }
+    //         })
+    //         const data = await res.json()
+    //         // store returned user somehow
+    //       }
+          onSuccess=(res)=>{
+            console.log('[Login Success] currentUser:',res.profileObj);
+            window.location.href='/profile';
+            showSuccessNotification('Logged in');
+            refreshTokenSetup(res);
+          }
+          onFailure=(res)=>{
+            console.log('[Login Failed] res:',res);
+            showerrorNotification("Login Failed")
+          }
+          onLogOutSuccess=()=>{
+            alert("logout successfully");
+          }
+
+    render(){
+      if(this.state.loggedIn)
+        {
+            return <Redirect to='/profile' />
+        }
      return(
        <div className="home-container">
-              <div className="left info">
-                <input type="email" name="email" placeholder="Enter your email" onChange={(e) => setEmail(e.target.value)} required></input>
-                <input type="text" name="password" placeholder="Enter password" onChange={(e) => setPassword(e.target.value)} required></input>
+            <div className="left info">
+              <form onSubmit={this.handleSubmit}>
+
+                <input type="email" id="email" placeholder="Enter your email" onChange={this.handleChange} required></input>
+                <input type="text" id="password" placeholder="Enter password" onChange={this.handleChange} required></input>
                 <button className="set"> Login </button>
                 <p>OR</p>
-                <div className="google">
-                    <img src="https://assets.materialup.com/uploads/3a91ac9f-f60f-4370-b58b-171d988c3b4b/preview.jpg" alt=""></img>
-                    Login using Google
-                </div>
+                <GoogleLogin
+                    clientId="477430375014-9529onq4cen0jifhh9smrles8dqf9jm8.apps.googleusercontent.com"
+                    buttonText="Log in with Google"
+                    onSuccess={this.onSuccess}
+                    onFailure={this.onFailure}
+                    cookiePolicy={'single_host_origin'}
+                />
+                {/* <GoogleLogout
+                    clientId="477430375014-9529onq4cen0jifhh9smrles8dqf9jm8.apps.googleusercontent.com"
+                    buttonText="LogOut"
+                    onLogoutSuccess={this.onLogOutSuccess}
+                    cookiePolicy={'single_host_origin'}
+                /> */}
+              </form>
+            </div>
+            <div className="right info">
+              <img src="https://ipac.page/images/brand-logo-1.jpg" alt="logo"></img>
+              <div className="tabs">
+                  <div className="student">Student</div>
+                  <div className="teacher">Tutor</div>
               </div>
-              <div className="right info">
-                <img src="https://ipac.page/images/brand-logo-1.jpg" alt="logo"></img>
-                <div className="tabs">
-                    <div className="student">Student</div>
-                    <div className="teacher">Tutor</div>
-                </div>
-                
-              </div>
+              
+            </div>
         </div>
      )
+    }
  }
  export default Student_Login;
