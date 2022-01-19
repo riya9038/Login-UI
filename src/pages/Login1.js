@@ -23,7 +23,8 @@ class Student_Login extends React.Component{
       this.state={
           email:'',
           password:'',
-          loggedIn
+          loggedIn,
+          buttonText:''
           }
   }
 
@@ -57,6 +58,7 @@ class Student_Login extends React.Component{
               localStorage.setItem('id',data.data.data.user._id);
               showSuccessNotification('Logged in');
               this.setState({loggedIn:true});
+              this.setState({buttonText:"sign out"});
 
             }
             
@@ -66,24 +68,13 @@ class Student_Login extends React.Component{
               showerrorNotification(error.response.data.message)
             });
           }
-    // handleLogin = async googleData => {
-    //         const res = await fetch(googleUrl, {
-    //             method: "POST",
-    //             body: JSON.stringify({
-    //             token: googleData.tokenId
-    //           }),
-    //           headers: {
-    //             "Content-Type": "application/json"
-    //           }
-    //         })
-    //         const data = await res.json()
-    //         // store returned user somehow
-    //       }
+
           onSuccess=(res)=>{
             console.log('[Login Success] currentUser:',res.profileObj);
             window.location.href='/profile';
             showSuccessNotification('Logged in');
             refreshTokenSetup(res);
+            localStorage.setItem("newtoken", true);
           }
           onFailure=(res)=>{
             console.log('[Login Failed] res:',res);

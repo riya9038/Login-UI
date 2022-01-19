@@ -81,8 +81,10 @@ class Admin_Login extends React.Component{
     //       }
           onSuccess=(res)=>{
             console.log('[Login Success] currentUser:',res.profileObj);
+            localStorage.setItem("newtoken", true);
             window.location.href='/profile';
             refreshTokenSetup(res);
+            // 
           }
           onFailure=(res)=>{
             console.log('[Login Failed] res:',res);
@@ -106,18 +108,21 @@ class Admin_Login extends React.Component{
                 <button className="set"> Login </button>
                 <p>OR</p>
                 <GoogleLogin
-                    clientId="477430375014-9529onq4cen0jifhh9smrles8dqf9jm8.apps.googleusercontent.com"
+                    clientId="477430375014-mtk0671bmbasbktb4k3ajb2hvmqirdu7.apps.googleusercontent.com"
                     buttonText="Log in with Google"
                     onSuccess={this.onSuccess}
                     onFailure={this.onFailure}
                     cookiePolicy={'single_host_origin'}
+                    prompt="select_account"
+
+                    // isSignedIn={true}
                 />
                 {/* <GoogleLogout
-                    clientId="477430375014-9529onq4cen0jifhh9smrles8dqf9jm8.apps.googleusercontent.com"
+                    clientId="477430375014-mtk0671bmbasbktb4k3ajb2hvmqirdu7.apps.googleusercontent.com"
                     buttonText="LogOut"
                     onLogoutSuccess={this.onLogOutSuccess}
                     cookiePolicy={'single_host_origin'}
-                /> */}
+                ></GoogleLogout> */}
               </form>
             </div>
             <div className="right info">
